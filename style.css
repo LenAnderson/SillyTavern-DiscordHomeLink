@@ -1,0 +1,51 @@
+body.stdhl #top-bar {
+    --stdhl--avatar: url(/img/five.png);
+    position: absolute;
+    top: 16px;
+    width: calc(var(--nav-bar-width) - 16px);
+    aspect-ratio: 1/1;
+    z-index: 9999;
+    background: none;
+    cursor: pointer;
+    left: 8px;
+    background-image: url(/img/five.png);
+    background-size: cover;
+    background-position: center center;
+    border-radius: 50%;
+    box-shadow: unset;
+    &:hover {
+        background-image: var(--stdhl--avatar);
+    }
+}
+
+.stdhl--ctxBlocker {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    > .stdhl--ctxMenu {
+        position: absolute;
+        > .stdhl--ctxItem {
+            display: flex;
+            gap: 1em;
+            align-items: center;
+            opacity: 0.75;
+            transition: 200ms;
+            &:hover { opacity: 1; }
+            > .stdhl--ctxAvatar {
+                width: calc(var(--nav-bar-width) - 16px);
+                aspect-ratio: 1/1;
+                background-size: cover;
+                background-position: center center;
+                border-radius: 50%;
+                &.stdhl--ctxIcon {
+                    aspect-ratio: unset;
+                    font-size: calc((var(--nav-bar-width) - 16px)  * 0.75);
+                    text-align: center;
+                }
+            }
+            > .sdthl--ctxName {
+                flex: 1 1 auto;
+            }
+        }
+    }
+}
