@@ -124,7 +124,7 @@ const checkDiscord = async()=>{
                             const item = document.createElement('li'); {
                                 item.classList.add('stdhl--ctxItem');
                                 item.classList.add('list-group-item');
-                                item.setAttribute('stdhl--user', u.name);
+                                item.setAttribute('data-stdhl--user', u.name);
                                 item.addEventListener('click', async()=>{
                                     performLogin(u.handle, '');
                                 });
