@@ -119,10 +119,12 @@ const checkDiscord = async()=>{
                         list.classList.add('list-group');
                         list.style.left = `${evt.clientX}px`;
                         list.style.top = `${evt.clientY}px`;
+                        users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
                         for (const u of users.filter(it=>it.handle != currentUser.handle)) {
                             const item = document.createElement('li'); {
                                 item.classList.add('stdhl--ctxItem');
                                 item.classList.add('list-group-item');
+                                item.setAttribute('stdhl--user', u.name);
                                 item.addEventListener('click', async()=>{
                                     performLogin(u.handle, '');
                                 });
