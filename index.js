@@ -5,16 +5,6 @@ import { currentUser } from '../../../user.js';
 
 // ----------------- COPIED BECAUSE NOT EXPORTED --------------------------------
 /**
- * Gets a CSRF token from the server.
- * @returns {Promise<string>} CSRF token
- */
-async function getCsrfToken() {
-    const response = await fetch('/csrf-token');
-    const data = await response.json();
-    return data.token;
-}
-const csrfToken = await getCsrfToken();
-/**
  * Attempts to log in the user.
  * @param {string} handle User's handle
  * @param {string} password User's password
@@ -29,10 +19,7 @@ async function performLogin(handle, password) {
     try {
         const response = await fetch('/api/users/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-Token': csrfToken,
-            },
+            headers: getRequestHeaders(),
             body: JSON.stringify(userInfo),
         });
 
@@ -69,10 +56,7 @@ function redirectToHome() {
 async function getUserList() {
     const response = await fetch('/api/users/list', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
-        },
+        headers: getRequestHeaders(),
     });
 
     if (!response.ok) {
