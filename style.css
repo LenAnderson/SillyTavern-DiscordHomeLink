@@ -8,27 +8,41 @@ body.stdhl #top-bar {
     background: none;
     cursor: pointer;
     left: 8px;
+    backdrop-filter: unset;
     background-image: url(/img/five.png);
     background-size: cover;
     background-position: center center;
     border-radius: 50%;
     box-shadow: unset;
-    &:hover {
+    &:after {
+        content: "";
+        position: absolute;
+        inset: 0;
         background-image: var(--stdhl--avatar);
+        background-size: cover;
+        background-position: center center;
+        border-radius: 50%;
+        opacity: 0;
+        transition: 200ms;
+    }
+    &:hover:after {
+        opacity: 1;
     }
 }
 
 .stdhl--ctxBlocker {
+    cursor: default;
     position: fixed;
     inset: 0;
     z-index: 10000;
     > .stdhl--ctxMenu {
         position: absolute;
+        left: var(--nav-bar-width);
         > .stdhl--ctxItem {
             display: flex;
             gap: 1em;
             align-items: center;
-            opacity: 0.75;
+            opacity: 0.5;
             transition: 200ms;
             &:hover { opacity: 1; }
             > .stdhl--ctxAvatar {

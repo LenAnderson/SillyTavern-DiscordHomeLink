@@ -116,13 +116,15 @@ const checkDiscord = async()=>{
                 const users = await getUserList();
                 const ctx = document.createElement('div'); {
                     ctx.classList.add('stdhl--ctxBlocker');
-                    ctx.addEventListener('click', ()=>ctx.remove());
+                    ctx.addEventListener('click', (evt)=>{
+                        evt.stopPropagation();
+                        ctx.remove();
+                    });
                     const list = document.createElement('ul'); {
                         list.classList.add('stdhl--ctxMenu');
                         list.classList.add('list-group');
-                        list.style.left = `${evt.clientX}px`;
-                        list.style.top = `${evt.clientY}px`;
-                        console.log('USERSXXX', users);
+                        const rect = topbar.getBoundingClientRect();
+                        list.style.top = `${rect.top}px`;
                         users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
                         for (const u of users.filter(it=>it.handle != currentUser.handle)) {
                             const item = document.createElement('li'); {
@@ -177,6 +179,7 @@ const checkDiscord = async()=>{
                         ctx.append(list);
                     }
                     document.body.append(ctx);
+                    topbar.append(ctx);
                 }
             });
         }
