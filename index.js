@@ -116,6 +116,7 @@ const checkDiscord = async()=>{
                 const users = await getUserList();
                 const ctx = document.createElement('div'); {
                     ctx.classList.add('stdhl--ctxBlocker');
+                    ctx.title = '';
                     ctx.addEventListener('click', (evt)=>{
                         evt.stopPropagation();
                         ctx.remove();
