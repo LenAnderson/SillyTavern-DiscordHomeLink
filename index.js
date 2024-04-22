@@ -1,4 +1,5 @@
 import { getRequestHeaders } from '../../../../script.js';
+import { POPUP_RESULT, POPUP_TYPE, Popup } from '../../../popup.js';
 import { executeSlashCommands } from '../../../slash-commands.js';
 import { currentUser } from '../../../user.js';
 
@@ -17,7 +18,7 @@ const csrfToken = await getCsrfToken();
  * Attempts to log in the user.
  * @param {string} handle User's handle
  * @param {string} password User's password
- * @returns {Promise<void>}
+ * @returns {Promise<{ success:boolean, error:object}>}
  */
 async function performLogin(handle, password) {
     const userInfo = {
@@ -38,7 +39,7 @@ async function performLogin(handle, password) {
         if (!response.ok) {
             const errorData = await response.json();
             // return displayError(errorData.error || 'An error occurred');
-            return;
+            return { success:false, error:errorData.error };
         }
 
         const data = await response.json();
@@ -46,10 +47,12 @@ async function performLogin(handle, password) {
         if (data.handle) {
             console.log(`Successfully logged in as ${handle}!`);
             redirectToHome();
+            return { success:true, error:null };
         }
     } catch (error) {
         console.error('Error logging in:', error);
         // displayError(String(error));
+        return { success:false, error: error };
     }
 }
 /**
@@ -119,6 +122,7 @@ const checkDiscord = async()=>{
                         list.classList.add('list-group');
                         list.style.left = `${evt.clientX}px`;
                         list.style.top = `${evt.clientY}px`;
+                        console.log('USERSXXX', users);
                         users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
                         for (const u of users.filter(it=>it.handle != currentUser.handle)) {
                             const item = document.createElement('li'); {
@@ -126,7 +130,17 @@ const checkDiscord = async()=>{
                                 item.classList.add('list-group-item');
                                 item.setAttribute('data-stdhl--user', u.name);
                                 item.addEventListener('click', async()=>{
-                                    performLogin(u.handle, '');
+                                    let pass = '';
+                                    if (u.password) {
+                                        const dlg = new Popup(`<h3>${u.name}<h3><h4>Password:</h4>`, POPUP_TYPE.INPUT, '');
+                                        await dlg.show();
+                                        if (dlg.result !== POPUP_RESULT.AFFIRMATIVE) return;
+                                        pass = dlg.value;
+                                    }
+                                    const result = await performLogin(u.handle, pass);
+                                    if (!result.success) {
+                                        toastr.error(result.error);
+                                    }
                                 });
                                 const ava = document.createElement('div'); {
                                     ava.classList.add('stdhl--ctxAvatar');
