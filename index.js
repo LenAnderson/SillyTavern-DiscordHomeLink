@@ -1,7 +1,7 @@
 import { getRequestHeaders } from '../../../../script.js';
 import { showLoader } from '../../../loader.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from '../../../popup.js';
-import { executeSlashCommands } from '../../../slash-commands.js';
+import { executeSlashCommands, registerSlashCommand } from '../../../slash-commands.js';
 import { currentUser } from '../../../user.js';
 import { delay } from '../../../utils.js';
 
@@ -81,7 +81,84 @@ async function getUserList() {
 
 
 
+const switchUser = async(name)=>{
+    const users = await getUserList();
+    const u = users.find(it=>it.handle.toLowerCase() == name.toLowerCase() || it.name.toLowerCase() == name.toLowerCase());
+    if (!u) {
+        toastr.error(`No user "${name}"`);
+        return;
+    }
+    let pass = '';
+    if (u.password) {
+        const dlg = new Popup(`<h3>${u.name}<h3><h4>Password:</h4>`, POPUP_TYPE.INPUT, '');
+        await dlg.show();
+        if (dlg.result !== POPUP_RESULT.AFFIRMATIVE) return;
+        pass = dlg.value;
+    }
+    const result = await performLogin(u.handle, pass);
+    if (!result.success) {
+        toastr.error(result.error);
+    }
+};
+const logout = async()=>{
+    document.querySelector('#logout_button').click();
+};
+const restart = async()=>{
+    toastr.info('Restarting SillyTavern');
+    showLoader();
+    await fetch('/api/plugins/process/restart');
+    await delay(1000);
+    while (!(await fetch('/', { method:'HEAD' })).ok) await delay(100);
+    location.reload();
+};
+const shutdown = async()=>{
+    toastr.info('Shutting down SillyTavern');
+    await fetch('/api/plugins/process/exit');
+    try {
+        window.close();
+    } catch {
+        const dlg = new Popup('<h3>Close SillyTavern Client</h3>', POPUP_TYPE.TEXT);
+        dlg.ok.addEventListener('click', ()=>window.close());
+        await dlg.show();
+    }
+};
+
+
 let hasProcessPlugin = (await fetch('/api/plugins/process/', { method:'HEAD' })).ok;
+
+
+registerSlashCommand('account',
+    (args, value)=>switchUser(value),
+    [],
+    '<span class="monospace">(username)</span> – Sign out of the current account and into the given account.',
+    true,
+    true,
+);
+registerSlashCommand('logout',
+    (args, value)=>logout(),
+    [],
+    '<span class="monospace"></span> – Sign out of the current account and return to the login page.',
+    true,
+    true,
+);
+if (hasProcessPlugin) {
+    registerSlashCommand('restart',
+        (args, value)=>restart(),
+        [],
+        '<span class="monospace"></span> – Restart SillyTavern server and reload client.',
+        true,
+        true,
+    );
+    registerSlashCommand('shutdown',
+        (args, value)=>shutdown(),
+        [],
+        '<span class="monospace"></span> – Shut down SillyTavern server and close client.',
+        true,
+        true,
+    );
+}
+
+
 let isDiscord = false;
 let user;
 let avatar;
@@ -120,19 +197,7 @@ const checkDiscord = async()=>{
                                 item.classList.add('list-group-item');
                                 item.setAttribute('data-stdhl--user', u.name);
                                 item.title = `Switch to user "${u.name}"`;
-                                item.addEventListener('click', async()=>{
-                                    let pass = '';
-                                    if (u.password) {
-                                        const dlg = new Popup(`<h3>${u.name}<h3><h4>Password:</h4>`, POPUP_TYPE.INPUT, '');
-                                        await dlg.show();
-                                        if (dlg.result !== POPUP_RESULT.AFFIRMATIVE) return;
-                                        pass = dlg.value;
-                                    }
-                                    const result = await performLogin(u.handle, pass);
-                                    if (!result.success) {
-                                        toastr.error(result.error);
-                                    }
-                                });
+                                item.addEventListener('click', async()=>switchUser(u));
                                 const ava = document.createElement('div'); {
                                     ava.classList.add('stdhl--ctxAvatar');
                                     ava.style.backgroundImage = `url(${u.avatar})`;
@@ -150,9 +215,7 @@ const checkDiscord = async()=>{
                             logoutItem.classList.add('stdhl--ctxItem');
                             logoutItem.classList.add('list-group-item');
                             logoutItem.title = 'Logout and return to login screen';
-                            logoutItem.addEventListener('click', async()=>{
-                                document.querySelector('#logout_button').click();
-                            });
+                            logoutItem.addEventListener('click', async()=>logout());
                             const ava = document.createElement('div'); {
                                 ava.classList.add('stdhl--ctxAvatar');
                                 ava.classList.add('stdhl--ctxIcon');
@@ -171,14 +234,7 @@ const checkDiscord = async()=>{
                                 reloadItem.classList.add('stdhl--ctxItem');
                                 reloadItem.classList.add('list-group-item');
                                 reloadItem.title = 'Restart SillyTavern server and reload client';
-                                reloadItem.addEventListener('click', async()=>{
-                                    toastr.info('Restarting SillyTavern');
-                                    showLoader();
-                                    await fetch('/api/plugins/process/restart');
-                                    await delay(1000);
-                                    while (!(await fetch('/', { method:'HEAD' })).ok) await delay(100);
-                                    location.reload();
-                                });
+                                reloadItem.addEventListener('click', async()=>restart());
                                 const ava = document.createElement('div'); {
                                     ava.classList.add('stdhl--ctxAvatar');
                                     ava.classList.add('stdhl--ctxIcon');
@@ -196,11 +252,7 @@ const checkDiscord = async()=>{
                                 exitItem.classList.add('stdhl--ctxItem');
                                 exitItem.classList.add('list-group-item');
                                 exitItem.title = 'Shut down SillyTavern server and close client';
-                                exitItem.addEventListener('click', async()=>{
-                                    toastr.info('Shutting down SillyTavern');
-                                    await fetch('/api/plugins/process/exit');
-                                    window.close();
-                                });
+                                exitItem.addEventListener('click', async()=>shutdown());
                                 const ava = document.createElement('div'); {
                                     ava.classList.add('stdhl--ctxAvatar');
                                     ava.classList.add('stdhl--ctxIcon');
