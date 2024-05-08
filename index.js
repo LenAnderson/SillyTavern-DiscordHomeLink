@@ -1,7 +1,9 @@
 import { getRequestHeaders } from '../../../../script.js';
+import { showLoader } from '../../../loader.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from '../../../popup.js';
 import { executeSlashCommands } from '../../../slash-commands.js';
 import { currentUser } from '../../../user.js';
+import { delay } from '../../../utils.js';
 
 // ----------------- COPIED BECAUSE NOT EXPORTED --------------------------------
 /**
@@ -79,6 +81,7 @@ async function getUserList() {
 
 
 
+let hasProcessPlugin = (await fetch('/api/plugins/process/', { method:'HEAD' })).ok;
 let isDiscord = false;
 let user;
 let avatar;
@@ -116,6 +119,7 @@ const checkDiscord = async()=>{
                                 item.classList.add('stdhl--ctxItem');
                                 item.classList.add('list-group-item');
                                 item.setAttribute('data-stdhl--user', u.name);
+                                item.title = `Switch to user "${u.name}"`;
                                 item.addEventListener('click', async()=>{
                                     let pass = '';
                                     if (u.password) {
@@ -145,6 +149,7 @@ const checkDiscord = async()=>{
                         const logoutItem = document.createElement('li'); {
                             logoutItem.classList.add('stdhl--ctxItem');
                             logoutItem.classList.add('list-group-item');
+                            logoutItem.title = 'Logout and return to login screen';
                             logoutItem.addEventListener('click', async()=>{
                                 document.querySelector('#logout_button').click();
                             });
@@ -160,6 +165,55 @@ const checkDiscord = async()=>{
                                 logoutItem.append(name);
                             }
                             list.append(logoutItem);
+                        }
+                        if (hasProcessPlugin) {
+                            const reloadItem = document.createElement('li'); {
+                                reloadItem.classList.add('stdhl--ctxItem');
+                                reloadItem.classList.add('list-group-item');
+                                reloadItem.title = 'Restart SillyTavern server and reload client';
+                                reloadItem.addEventListener('click', async()=>{
+                                    toastr.info('Restarting SillyTavern');
+                                    showLoader();
+                                    await fetch('/api/plugins/process/restart');
+                                    await delay(1000);
+                                    while (!(await fetch('/', { method:'HEAD' })).ok) await delay(100);
+                                    location.reload();
+                                });
+                                const ava = document.createElement('div'); {
+                                    ava.classList.add('stdhl--ctxAvatar');
+                                    ava.classList.add('stdhl--ctxIcon');
+                                    ava.classList.add('fa-solid', 'fa-rotate');
+                                    reloadItem.append(ava);
+                                }
+                                const name = document.createElement('div'); {
+                                    name.classList.add('stdhl--ctxName');
+                                    name.textContent = 'Restart';
+                                    reloadItem.append(name);
+                                }
+                                list.append(reloadItem);
+                            }
+                            const exitItem = document.createElement('li'); {
+                                exitItem.classList.add('stdhl--ctxItem');
+                                exitItem.classList.add('list-group-item');
+                                exitItem.title = 'Shut down SillyTavern server and close client';
+                                exitItem.addEventListener('click', async()=>{
+                                    toastr.info('Shutting down SillyTavern');
+                                    await fetch('/api/plugins/process/exit');
+                                    window.close();
+                                });
+                                const ava = document.createElement('div'); {
+                                    ava.classList.add('stdhl--ctxAvatar');
+                                    ava.classList.add('stdhl--ctxIcon');
+                                    ava.classList.add('fa-solid', 'fa-power-off');
+                                    exitItem.append(ava);
+                                }
+                                const name = document.createElement('div'); {
+                                    name.classList.add('stdhl--ctxName');
+                                    name.textContent = 'Shut Down';
+                                    exitItem.append(name);
+                                }
+                                list.append(exitItem);
+                            }
                         }
                         ctx.append(list);
                     }
