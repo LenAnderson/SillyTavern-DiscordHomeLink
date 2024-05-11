@@ -4,6 +4,8 @@ When using the [Discord Inspired Theme](https://github.com/nyxkrage/st-discord-i
 
 Right-click the logo to switch users or logout.
 
+In other themes, right-click the user settings button for the same options.
+
 ![](README/dhl-01.png)
 
 ## Requirements
