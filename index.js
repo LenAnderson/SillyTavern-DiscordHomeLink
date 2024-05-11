@@ -122,6 +122,9 @@ const shutdown = async()=>{
         await dlg.show();
     }
 };
+const goHome = async()=>{
+    executeSlashCommands('/closechat');
+};
 
 
 let hasProcessPlugin = (await fetch('/api/plugins/process/', { method:'HEAD' })).ok;
@@ -159,127 +162,166 @@ if (hasProcessPlugin) {
 }
 
 
-let isDiscord = false;
+let isDiscord = null;
 let user;
 let avatar;
+/**@type {HTMLElement}*/
+let trigger;
+
+const clickListener = async(evt)=>{
+    if (!isDiscord) return;
+    executeSlashCommands('/closechat');
+};
+
+const contextListener = async(evt)=>{
+    evt.preventDefault();
+    const users = await getUserList();
+    const ctx = document.createElement('div'); {
+        ctx.classList.add('stdhl--ctxBlocker');
+        ctx.title = '';
+        ctx.addEventListener('click', (evt)=>{
+            evt.stopPropagation();
+            ctx.remove();
+        });
+        const list = document.createElement('ul'); {
+            list.classList.add('stdhl--ctxMenu');
+            list.classList.add('list-group');
+            const rect = trigger.getBoundingClientRect();
+            list.style.top = `${isDiscord ? rect.top : rect.bottom}px`;
+            list.style.left = isDiscord ? 'var(--nav-bar-width)' : `${rect.left}px`;
+            const homeItem = document.createElement('li'); {
+                homeItem.classList.add('stdhl--ctxItem');
+                homeItem.classList.add('stdhl--homeItem');
+                homeItem.classList.add('list-group-item');
+                homeItem.title = 'Return to landing page';
+                homeItem.addEventListener('click', async()=>goHome());
+                const ava = document.createElement('div'); {
+                    ava.classList.add('stdhl--ctxAvatar');
+                    ava.classList.add('stdhl--ctxIcon');
+                    ava.classList.add('fa-solid', 'fa-home');
+                    homeItem.append(ava);
+                }
+                const name = document.createElement('div'); {
+                    name.classList.add('stdhl--ctxName');
+                    name.textContent = 'Landing Page';
+                    homeItem.append(name);
+                }
+                list.append(homeItem);
+            }
+            users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+            for (const u of users.filter(it=>it.handle != currentUser.handle)) {
+                const item = document.createElement('li'); {
+                    item.classList.add('stdhl--ctxItem');
+                    item.classList.add('list-group-item');
+                    item.setAttribute('data-stdhl--user', u.name);
+                    item.title = `Switch to user "${u.name}"`;
+                    item.addEventListener('click', async()=>switchUser(u.handle));
+                    const ava = document.createElement('div'); {
+                        ava.classList.add('stdhl--ctxAvatar');
+                        ava.style.backgroundImage = `url(${u.avatar})`;
+                        item.append(ava);
+                    }
+                    const name = document.createElement('div'); {
+                        name.classList.add('stdhl--ctxName');
+                        name.textContent = u.name;
+                        item.append(name);
+                    }
+                    list.append(item);
+                }
+            }
+            const logoutItem = document.createElement('li'); {
+                logoutItem.classList.add('stdhl--ctxItem');
+                logoutItem.classList.add('list-group-item');
+                logoutItem.title = 'Logout and return to login screen';
+                logoutItem.addEventListener('click', async()=>logout());
+                const ava = document.createElement('div'); {
+                    ava.classList.add('stdhl--ctxAvatar');
+                    ava.classList.add('stdhl--ctxIcon');
+                    ava.classList.add('fa-solid', 'fa-right-from-bracket');
+                    logoutItem.append(ava);
+                }
+                const name = document.createElement('div'); {
+                    name.classList.add('stdhl--ctxName');
+                    name.textContent = 'Logout';
+                    logoutItem.append(name);
+                }
+                list.append(logoutItem);
+            }
+            if (hasProcessPlugin) {
+                const reloadItem = document.createElement('li'); {
+                    reloadItem.classList.add('stdhl--ctxItem');
+                    reloadItem.classList.add('list-group-item');
+                    reloadItem.title = 'Restart SillyTavern server and reload client';
+                    reloadItem.addEventListener('click', async()=>restart());
+                    const ava = document.createElement('div'); {
+                        ava.classList.add('stdhl--ctxAvatar');
+                        ava.classList.add('stdhl--ctxIcon');
+                        ava.classList.add('fa-solid', 'fa-rotate');
+                        reloadItem.append(ava);
+                    }
+                    const name = document.createElement('div'); {
+                        name.classList.add('stdhl--ctxName');
+                        name.textContent = 'Restart';
+                        reloadItem.append(name);
+                    }
+                    list.append(reloadItem);
+                }
+                const exitItem = document.createElement('li'); {
+                    exitItem.classList.add('stdhl--ctxItem');
+                    exitItem.classList.add('list-group-item');
+                    exitItem.title = 'Shut down SillyTavern server and close client';
+                    exitItem.addEventListener('click', async()=>shutdown());
+                    const ava = document.createElement('div'); {
+                        ava.classList.add('stdhl--ctxAvatar');
+                        ava.classList.add('stdhl--ctxIcon');
+                        ava.classList.add('fa-solid', 'fa-power-off');
+                        exitItem.append(ava);
+                    }
+                    const name = document.createElement('div'); {
+                        name.classList.add('stdhl--ctxName');
+                        name.textContent = 'Shut Down';
+                        exitItem.append(name);
+                    }
+                    list.append(exitItem);
+                }
+            }
+            ctx.append(list);
+        }
+        document.body.append(ctx);
+        trigger.append(ctx);
+    }
+};
 const checkDiscord = async()=>{
     let newIsDiscord = window.getComputedStyle(document.body).getPropertyValue('--nav-bar-width') !== '';
     if (isDiscord != newIsDiscord) {
         isDiscord = newIsDiscord;
+        user = currentUser.name;
+        avatar = currentUser.avatar;
         document.body.classList[isDiscord ? 'add' : 'remove']('stdhl');
-        if (isDiscord && (user != currentUser.name || avatar != currentUser.avatar)) {
-            user = currentUser.name;
-            avatar = currentUser.avatar;
-            /**@type {HTMLElement} */
-            const topbar = document.querySelector('#top-bar');
-            topbar.style.setProperty('--stdhl--avatar', `url(${avatar})`);
-            const hint = 'Right-click to switch or logout';
-            topbar.title = `${user}\n${'–'.repeat(Math.max(user.length,hint.length))}\n${hint}`;
-            topbar.addEventListener('contextmenu', async(evt)=>{
-                evt.preventDefault();
-                const users = await getUserList();
-                const ctx = document.createElement('div'); {
-                    ctx.classList.add('stdhl--ctxBlocker');
-                    ctx.title = '';
-                    ctx.addEventListener('click', (evt)=>{
-                        evt.stopPropagation();
-                        ctx.remove();
-                    });
-                    const list = document.createElement('ul'); {
-                        list.classList.add('stdhl--ctxMenu');
-                        list.classList.add('list-group');
-                        const rect = topbar.getBoundingClientRect();
-                        list.style.top = `${rect.top}px`;
-                        users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-                        for (const u of users.filter(it=>it.handle != currentUser.handle)) {
-                            const item = document.createElement('li'); {
-                                item.classList.add('stdhl--ctxItem');
-                                item.classList.add('list-group-item');
-                                item.setAttribute('data-stdhl--user', u.name);
-                                item.title = `Switch to user "${u.name}"`;
-                                item.addEventListener('click', async()=>switchUser(u.handle));
-                                const ava = document.createElement('div'); {
-                                    ava.classList.add('stdhl--ctxAvatar');
-                                    ava.style.backgroundImage = `url(${u.avatar})`;
-                                    item.append(ava);
-                                }
-                                const name = document.createElement('div'); {
-                                    name.classList.add('stdhl--ctxName');
-                                    name.textContent = u.name;
-                                    item.append(name);
-                                }
-                                list.append(item);
-                            }
-                        }
-                        const logoutItem = document.createElement('li'); {
-                            logoutItem.classList.add('stdhl--ctxItem');
-                            logoutItem.classList.add('list-group-item');
-                            logoutItem.title = 'Logout and return to login screen';
-                            logoutItem.addEventListener('click', async()=>logout());
-                            const ava = document.createElement('div'); {
-                                ava.classList.add('stdhl--ctxAvatar');
-                                ava.classList.add('stdhl--ctxIcon');
-                                ava.classList.add('fa-solid', 'fa-right-from-bracket');
-                                logoutItem.append(ava);
-                            }
-                            const name = document.createElement('div'); {
-                                name.classList.add('stdhl--ctxName');
-                                name.textContent = 'Logout';
-                                logoutItem.append(name);
-                            }
-                            list.append(logoutItem);
-                        }
-                        if (hasProcessPlugin) {
-                            const reloadItem = document.createElement('li'); {
-                                reloadItem.classList.add('stdhl--ctxItem');
-                                reloadItem.classList.add('list-group-item');
-                                reloadItem.title = 'Restart SillyTavern server and reload client';
-                                reloadItem.addEventListener('click', async()=>restart());
-                                const ava = document.createElement('div'); {
-                                    ava.classList.add('stdhl--ctxAvatar');
-                                    ava.classList.add('stdhl--ctxIcon');
-                                    ava.classList.add('fa-solid', 'fa-rotate');
-                                    reloadItem.append(ava);
-                                }
-                                const name = document.createElement('div'); {
-                                    name.classList.add('stdhl--ctxName');
-                                    name.textContent = 'Restart';
-                                    reloadItem.append(name);
-                                }
-                                list.append(reloadItem);
-                            }
-                            const exitItem = document.createElement('li'); {
-                                exitItem.classList.add('stdhl--ctxItem');
-                                exitItem.classList.add('list-group-item');
-                                exitItem.title = 'Shut down SillyTavern server and close client';
-                                exitItem.addEventListener('click', async()=>shutdown());
-                                const ava = document.createElement('div'); {
-                                    ava.classList.add('stdhl--ctxAvatar');
-                                    ava.classList.add('stdhl--ctxIcon');
-                                    ava.classList.add('fa-solid', 'fa-power-off');
-                                    exitItem.append(ava);
-                                }
-                                const name = document.createElement('div'); {
-                                    name.classList.add('stdhl--ctxName');
-                                    name.textContent = 'Shut Down';
-                                    exitItem.append(name);
-                                }
-                                list.append(exitItem);
-                            }
-                        }
-                        ctx.append(list);
-                    }
-                    document.body.append(ctx);
-                    topbar.append(ctx);
-                }
-            });
+        document.body.classList[isDiscord ? 'remove' : 'add']('stdhl--nonDiscord');
+        if (trigger) {
+            trigger.removeEventListener('contextmenu', contextListener);
+            trigger.removeEventListener('click', clickListener);
         }
+        let hint;
+        if (isDiscord) {
+            trigger = document.querySelector('#top-bar');
+            trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--nav-bar-width) - 16px)');
+            hint = 'Click to return to landing page\nRight-click to switch users, logout, restart server, or shutdown server';
+            const sep = '–'.repeat(Math.min(50, Math.max(user.length,...hint.split('\n').map(it=>it.length))));
+            trigger.title = `Current User: ${user}\n${sep}\n${hint}`;
+            trigger.addEventListener('contextmenu', contextListener);
+            trigger.addEventListener('click', clickListener);
+        } else {
+            trigger = document.querySelector('#user-settings-button > .drawer-toggle');
+            trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--topBarBlockSize))');
+            hint = 'Right click to return to landing page, switch users, logout, restart server, or shutdown server';
+            const sep = '–'.repeat(Math.min(50, Math.max(user.length,...hint.split('\n').map(it=>it.length))));
+            trigger.title = `User Settings\n${sep}\nCurrent User: ${user}\n${sep}\n${hint}`;
+            trigger.addEventListener('contextmenu', contextListener);
+        }
+        trigger.style.setProperty('--stdhl--avatar', `url(${avatar})`);
     }
     setTimeout(checkDiscord, 2000);
 };
 checkDiscord();
-
-document.querySelector('#top-bar').addEventListener('click', ()=>{
-    if (!isDiscord) return;
-    executeSlashCommands('/closechat');
-});

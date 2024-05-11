@@ -30,6 +30,36 @@ body.stdhl #top-bar {
     }
 }
 
+body.stdhl--nonDiscord {
+    #user-settings-button > .drawer-toggle {
+        --stdhl--avatar: url(/img/five.png);
+        cursor: pointer;
+        position: relative;
+        &:hover > .drawer-icon { opacity: 0; }
+        > .drawer-icon {
+            pointer-events: none;
+        }
+        &:after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            aspect-ratio: 1 / 1;
+            background-image: var(--stdhl--avatar);
+            background-size: cover;
+            background-position: center center;
+            border-radius: 50%;
+            filter: drop-shadow(0 0 0px black);
+            opacity: 0;
+            transition: 200ms;
+            z-index: 1;
+        }
+        &:hover:after {
+            opacity: 1;
+            filter: drop-shadow(0 0 10px black);
+        }
+    }
+}
+
 .stdhl--ctxBlocker {
     cursor: default;
     position: fixed;
@@ -44,16 +74,19 @@ body.stdhl #top-bar {
             align-items: center;
             opacity: 0.5;
             transition: 200ms;
+            body.stdhl &.stdhl--homeItem {
+                display: none;
+            }
             &:hover { opacity: 1; }
             > .stdhl--ctxAvatar {
-                width: calc(var(--nav-bar-width) - 16px);
+                width: var(--stdhl--iconSize);
                 aspect-ratio: 1/1;
                 background-size: cover;
                 background-position: center center;
                 border-radius: 50%;
                 &.stdhl--ctxIcon {
                     aspect-ratio: unset;
-                    font-size: calc((var(--nav-bar-width) - 16px)  * 0.75);
+                    font-size: calc(var(--stdhl--iconSize)  * 0.75);
                     text-align: center;
                 }
             }
