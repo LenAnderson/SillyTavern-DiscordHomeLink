@@ -197,7 +197,7 @@ const checkDiscord = async()=>{
                                 item.classList.add('list-group-item');
                                 item.setAttribute('data-stdhl--user', u.name);
                                 item.title = `Switch to user "${u.name}"`;
-                                item.addEventListener('click', async()=>switchUser(u));
+                                item.addEventListener('click', async()=>switchUser(u.handle));
                                 const ava = document.createElement('div'); {
                                     ava.classList.add('stdhl--ctxAvatar');
                                     ava.style.backgroundImage = `url(${u.avatar})`;
