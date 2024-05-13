@@ -2,6 +2,9 @@ import { getRequestHeaders } from '../../../../script.js';
 import { showLoader } from '../../../loader.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from '../../../popup.js';
 import { executeSlashCommands, registerSlashCommand } from '../../../slash-commands.js';
+import { SlashCommand } from '../../../slash-commands/SlashCommand.js';
+import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/SlashCommandArgument.js';
+import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
 import { currentUser } from '../../../user.js';
 import { delay } from '../../../utils.js';
 
@@ -130,35 +133,30 @@ const goHome = async()=>{
 let hasProcessPlugin = (await fetch('/api/plugins/process/', { method:'HEAD' })).ok;
 
 
-registerSlashCommand('account',
-    (args, value)=>switchUser(value),
-    [],
-    '<span class="monospace">(username)</span> – Sign out of the current account and into the given account.',
-    true,
-    true,
-);
-registerSlashCommand('logout',
-    (args, value)=>logout(),
-    [],
-    '<span class="monospace"></span> – Sign out of the current account and return to the login page.',
-    true,
-    true,
-);
+SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'account',
+    callback: (args, value)=>switchUser(value),
+    unnamedArgumentList: [
+        SlashCommandArgument.fromProps({
+            description: 'username of the account to switch to',
+            typeList: [ARGUMENT_TYPE.STRING],
+            isRequired: true,
+        }),
+    ],
+    helpString: 'Sign out of the current account and into the given account.',
+}));
+SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'logout',
+    callback: (args, value)=>logout(),
+    helpString: 'Sign out of the current account and return to the login page.',
+}));
 if (hasProcessPlugin) {
-    registerSlashCommand('restart',
-        (args, value)=>restart(),
-        [],
-        '<span class="monospace"></span> – Restart SillyTavern server and reload client.',
-        true,
-        true,
-    );
-    registerSlashCommand('shutdown',
-        (args, value)=>shutdown(),
-        [],
-        '<span class="monospace"></span> – Shut down SillyTavern server and close client.',
-        true,
-        true,
-    );
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'restart',
+        callback: (args, value)=>restart(),
+        helpString: 'Restart SillyTavern server and reload client.',
+    }));
+    SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name: 'shutdown',
+        callback: (args, value)=>shutdown(),
+        helpString: 'Shut down SillyTavern server and close client.',
+    }));
 }
 
 
