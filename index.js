@@ -311,11 +311,12 @@ const checkDiscord = async()=>{
             trigger.addEventListener('contextmenu', contextListener);
             trigger.addEventListener('click', clickListener);
         } else {
+            const drawerIcon = document.querySelector('#user-settings-button > .drawer-toggle > .drawer-icon')
             trigger = document.querySelector('#user-settings-button > .drawer-toggle');
             trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--topBarBlockSize))');
             hint = 'Right click to return to landing page, switch users, logout, restart server, or shutdown server';
             const sep = '–'.repeat(Math.min(50, Math.max(user.length,...hint.split('\n').map(it=>it.length))));
-            trigger.title = `User Settings\n${sep}\nCurrent User: ${user}\n${sep}\n${hint}`;
+            drawerIcon.title = `User Settings\n${sep}\nCurrent User: ${user}\n${sep}\n${hint}`;
             trigger.addEventListener('contextmenu', contextListener);
         }
         trigger.style.setProperty('--stdhl--avatar', `url(${avatar})`);
