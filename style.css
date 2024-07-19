@@ -35,6 +35,7 @@ body.stdhl--nonDiscord {
         --stdhl--avatar: url(/img/five.png);
         cursor: pointer;
         position: relative;
+        z-index: 1;
         &:hover > .drawer-icon { opacity: 0; }
         &:after {
             content: "";
@@ -47,7 +48,7 @@ body.stdhl--nonDiscord {
             border-radius: 50%;
             filter: drop-shadow(0 0 0px black);
             opacity: 0;
-            z-index: -1;
+            pointer-events: none;
         }
         &:hover:after {
             opacity: 1;
