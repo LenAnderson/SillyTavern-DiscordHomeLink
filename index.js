@@ -302,6 +302,7 @@ const checkDiscord = async()=>{
             trigger.removeEventListener('click', clickListener);
         }
         let hint;
+        const drawerIcon = /**@type {HTMLElement}*/(document.querySelector('#user-settings-button > .drawer-toggle > .drawer-icon'));
         if (isDiscord) {
             trigger = document.querySelector('#top-bar');
             trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--nav-bar-width) - 16px)');
@@ -310,8 +311,8 @@ const checkDiscord = async()=>{
             trigger.title = `Current User: ${user}\n${sep}\n${hint}`;
             trigger.addEventListener('contextmenu', contextListener);
             trigger.addEventListener('click', clickListener);
+            drawerIcon.title = 'User Settings';
         } else {
-            const drawerIcon = document.querySelector('#user-settings-button > .drawer-toggle > .drawer-icon')
             trigger = document.querySelector('#user-settings-button > .drawer-toggle');
             trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--topBarBlockSize))');
             hint = 'Right click to return to landing page, switch users, logout, restart server, or shutdown server';
