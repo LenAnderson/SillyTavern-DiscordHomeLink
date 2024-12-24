@@ -325,3 +325,11 @@ const checkDiscord = async()=>{
     setTimeout(checkDiscord, 2000);
 };
 checkDiscord();
+
+const d = Number(new Date().toISOString().slice(5, 10).replace('-', ''));
+if (d >= 1223) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/scripts/extensions/third-party/SillyTavern-DiscordHomeLink/xm.css';
+    document.head.append(link);
+}
