@@ -126,7 +126,7 @@ const shutdown = async()=>{
     }
 };
 const goHome = async()=>{
-    executeSlashCommands('/closechat');
+    await (SlashCommandParser.commands['lp-closechat'] ?? SlashCommandParser.commands['closechat']).callback(null, null);
 };
 
 
@@ -168,7 +168,7 @@ let trigger;
 
 const clickListener = async(evt)=>{
     if (!isDiscord) return;
-    executeSlashCommands('/closechat');
+    goHome();
 };
 
 const contextListener = async(evt)=>{
