@@ -63,8 +63,12 @@ body.stdhl--nonDiscord {
     inset: 0;
     z-index: 10000;
     > .stdhl--ctxMenu {
+        --top: 16px;
+        top: var(--top);
+        max-height: calc(100vh - var(--top) - 16px);
         position: absolute;
         left: var(--nav-bar-width);
+        overflow: auto;
         > .stdhl--separator {
             background-color: var(--SmartThemeBodyColor);
             padding: 1px;

@@ -191,7 +191,7 @@ const contextListener = async(evt)=>{
             list.classList.add('stdhl--ctxMenu');
             list.classList.add('list-group');
             const rect = trigger.getBoundingClientRect();
-            list.style.top = `${isDiscord ? rect.top : rect.bottom}px`;
+            list.style.setProperty('--top', `${isDiscord ? rect.top : rect.bottom}px`);
             list.style.left = isDiscord ? 'var(--nav-bar-width)' : `${rect.left}px`;
             const homeItem = document.createElement('li'); {
                 homeItem.classList.add('stdhl--ctxItem');
