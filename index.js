@@ -7,6 +7,7 @@ import { ARGUMENT_TYPE, SlashCommandArgument } from '../../../slash-commands/Sla
 import { SlashCommandParser } from '../../../slash-commands/SlashCommandParser.js';
 import { currentUser } from '../../../user.js';
 import { delay } from '../../../utils.js';
+import { Settings } from './src/Settings.js';
 
 // ----------------- COPIED BECAUSE NOT EXPORTED --------------------------------
 /**
@@ -80,6 +81,11 @@ async function getUserList() {
     return userListObj;
 }
 // ----------------- END OF: COPIED BECAUSE NOT EXPORTED ------------------------
+
+
+
+
+const settings = new Settings();
 
 
 
@@ -206,6 +212,56 @@ const contextListener = async(evt)=>{
                 }
                 list.append(homeItem);
             }
+            {
+                const sep = document.createElement('div'); {
+                    sep.classList.add('stdhl--separator');
+                    list.append(sep);
+                }
+            }
+            const topBarButtons = settings.topBarList
+                .map(title=>settings.dom.drawerList.find(it=>it.title == title))
+                .filter(Boolean)
+                .sort((a,b)=>[...a.btn.parentElement.children].indexOf(a.btn) - [...a.btn.parentElement.children].indexOf(b.btn))
+            ;
+            for (const { btn, title } of topBarButtons) {
+                const item = document.createElement('li'); {
+                    item.classList.add('stdhl--ctxItem');
+                    item.classList.add('list-group-item');
+                    item.title = title;
+                    item.addEventListener('click', async()=>{
+                        const body = /**@type {HTMLElement}*/(btn.querySelector('.drawer-content'));
+                        if (!btn.dataset.observer) {
+                            const mo = new MutationObserver(()=>{
+                                if (body.style.display == 'none') {
+                                    btn.classList.add('stdhl--isHidden');
+                                }
+                            });
+                            mo.observe(body, { attributes:true, attributeFilter:['style'] });
+                            btn.dataset.observer = '1';
+                        }
+                        btn.classList.remove('stdhl--isHidden');
+                        /**@type {HTMLElement}*/(btn.querySelector('.drawer-toggle')).click();
+                    });
+                    const ava = document.createElement('div'); {
+                        ava.classList.add('stdhl--ctxAvatar');
+                        ava.classList.add('stdhl--ctxIcon');
+                        ava.classList.add(...[...btn.querySelector('.drawer-icon').classList].filter(it=>it.startsWith('fa-')));
+                        item.append(ava);
+                    }
+                    const name = document.createElement('div'); {
+                        name.classList.add('stdhl--ctxName');
+                        name.textContent = title;
+                        item.append(name);
+                    }
+                    list.append(item);
+                }
+            }
+            {
+                const sep = document.createElement('div'); {
+                    sep.classList.add('stdhl--separator');
+                    list.append(sep);
+                }
+            }
             users.sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
             for (const u of users.filter(it=>it.handle != currentUser.handle)) {
                 const item = document.createElement('li'); {
@@ -225,6 +281,12 @@ const contextListener = async(evt)=>{
                         item.append(name);
                     }
                     list.append(item);
+                }
+            }
+            {
+                const sep = document.createElement('div'); {
+                    sep.classList.add('stdhl--separator');
+                    list.append(sep);
                 }
             }
             const logoutItem = document.createElement('li'); {

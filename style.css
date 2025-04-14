@@ -65,6 +65,17 @@ body.stdhl--nonDiscord {
     > .stdhl--ctxMenu {
         position: absolute;
         left: var(--nav-bar-width);
+        > .stdhl--separator {
+            background-color: var(--SmartThemeBodyColor);
+            padding: 1px;
+            opacity: 0.25;
+            margin: 0.5em;
+            cursor: default;
+            display: none;
+            &:is(body.stdhl--separators .stdhl--ctxItem + *):not(:is(body.stdhl .stdhl--homeItem + *)) {
+                display: block;
+            }
+        }
         > .stdhl--ctxItem {
             display: flex;
             gap: 1em;
@@ -93,3 +104,29 @@ body.stdhl--nonDiscord {
         }
     }
 }
+
+.stdhl--isHidden {
+    display: none;
+}
+
+#stdhl--settings {
+    #stdhl--settings-topBarWrapper {
+        display: contents;
+    }
+    .stdhl--settings-topBarSetting > label {
+        padding: 0.25em 0;
+        cursor: pointer;
+        margin: 0.25em 0;
+    }
+
+    .stdhl--text {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+    }
+
+    .stdhl--icon {
+        font-size: 1.5em;
+    }
+}
+
