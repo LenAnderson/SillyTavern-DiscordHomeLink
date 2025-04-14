@@ -232,6 +232,7 @@ const contextListener = async(evt)=>{
                         const body = /**@type {HTMLElement}*/(btn.querySelector('.drawer-content'));
                         if (!btn.dataset.observer) {
                             const mo = new MutationObserver(()=>{
+                                if (!settings.topBarList.includes(title)) return;
                                 if (body.style.display == 'none') {
                                     btn.classList.add('stdhl--isHidden');
                                 }
