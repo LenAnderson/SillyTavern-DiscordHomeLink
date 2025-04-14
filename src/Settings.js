@@ -46,7 +46,7 @@ export class Settings {
                 btn.classList.add('stdhl--isHidden');
             }
             const setting = /**@type {HTMLElement}*/(tpl.content.firstElementChild.cloneNode(true)); {
-                setting.querySelector('.stdhl--primary').textContent = title;
+                setting.querySelector('.stdhl--primary').textContent = title.split('\n').shift();
                 setting.querySelector('.stdhl--icon').classList.add(...[...btn.querySelector('.drawer-icon').classList].filter(it=>it.startsWith('fa-')));
                 setting.dataset.title = title;
                 const inp = setting.querySelector('input'); {
