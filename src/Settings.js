@@ -1,9 +1,17 @@
 import { saveSettingsDebounced } from '../../../../../script.js';
 import { extension_settings } from '../../../../extensions.js';
+import { showFontAwesomePicker } from '../../../../utils.js';
+import { trigger } from '../index.js';
 
 export class Settings {
     /**@type {boolean} */
     separators = true;
+    /**@type {'image'|'icon'} */
+    homeIconType = 'image';
+    /**@type {string} */
+    homeIconImage = '/img/five.png';
+    /**@type {string} */
+    homeIconIcon = 'fa-home';
 
     /**@type {string[]} */
     topBarList = [];
@@ -19,12 +27,23 @@ export class Settings {
     constructor() {
         Object.assign(this, extension_settings.discordHomeLink ?? {});
         document.body.classList[this.separators ? 'add' : 'remove']('stdhl--separators');
+        document.body.setAttribute('data-stdhl--homeIconType', this.homeIconType);
+        document.body.style.setProperty('--stdhl--iconUrl', `url('${encodeURI(this.homeIconImage)}')`);
+        document.body.style.setProperty('--stdhl--icon', this.homeIconIcon);
+        [...(trigger?.classList ?? [])]
+            .filter(it=>it.startsWith('fa-') && !['fa-solid', 'fa-fw'].includes(it))
+            .forEach(it=>trigger.classList.remove(it))
+        ;
+        trigger?.classList.add(this.homeIconIcon);
         this.render();
     }
 
     toJSON() {
         return {
             separators: this.separators,
+            homeIconType: this.homeIconType,
+            homeIconImage: this.homeIconImage,
+            homeIconIcon: this.homeIconIcon,
             topBarList: this.topBarList,
         };
     }
@@ -85,6 +104,51 @@ export class Settings {
         const dom = /**@type {HTMLElement}*/(settingsTpl.cloneNode(true));
         this.dom.root = dom;
         document.querySelector('#extensions_settings').append(dom);
+
+        {
+            const cb = /**@type {HTMLInputElement}*/(dom.querySelector('#stdhl--homeIconImage'));
+            cb.checked = this.homeIconType == 'image';
+            cb.addEventListener('input', ()=>{
+                this.homeIconType = 'image';
+                document.body.setAttribute('data-stdhl--homeIconType', this.homeIconType);
+                this.save();
+            });
+            const url = /**@type {HTMLInputElement}*/(dom.querySelector('#stdhl--homeIconImage-url'));
+            url.value = this.homeIconImage;
+            url.addEventListener('change', ()=>{
+                this.homeIconImage = url.value;
+                document.body.style.setProperty('--stdhl--iconUrl', `url('${encodeURI(this.homeIconImage)}')`);
+            });
+            /**@type {HTMLElement}*/(dom.querySelector('#stdhl--homeIconImage-icon')).style.setProperty('--image', this.homeIconImage);
+        }
+        {
+            const cb = /**@type {HTMLInputElement}*/(dom.querySelector('#stdhl--homeIconIcon'));
+            cb.checked = this.homeIconType == 'icon';
+            cb.addEventListener('input', ()=>{
+                this.homeIconType = 'icon';
+                document.body.setAttribute('data-stdhl--homeIconType', this.homeIconType);
+                this.save();
+            });
+            const icon = /**@type {HTMLElement}*/(dom.querySelector('#stdhl--homeIconIcon-icon'))
+            icon.classList.add(this.homeIconIcon);
+            dom.querySelector('#stdhl--homeIconIcon-picker').addEventListener('click', async()=>{
+                const fa = await showFontAwesomePicker();
+                if (fa) {
+                    this.homeIconIcon = fa;
+                    [...(trigger?.classList ?? [])]
+                        .filter(it=>it.startsWith('fa-') && !['fa-solid', 'fa-fw'].includes(it))
+                        .forEach(it=>trigger.classList.remove(it))
+                    ;
+                    trigger?.classList.add(this.homeIconIcon);
+                    [...(icon?.classList ?? [])]
+                        .filter(it=>it.startsWith('fa-') && !['fa-solid', 'fa-fw'].includes(it))
+                        .forEach(it=>icon.classList.remove(it))
+                    ;
+                    icon?.classList.add(this.homeIconIcon);
+                    this.save();
+                }
+            });
+        }
 
         {
             const cb = /**@type {HTMLInputElement}*/(dom.querySelector('#stdhl--separators'));

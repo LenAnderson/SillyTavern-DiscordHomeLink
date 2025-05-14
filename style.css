@@ -1,5 +1,13 @@
+#top-bar, #user-settings-button > .drawer-toggle {
+    &::before {
+        display: none;
+    }
+}
 body.stdhl #top-bar {
     --stdhl--avatar: url(/img/five.png);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: absolute;
     top: 16px;
     width: calc(var(--nav-bar-width) - 16px);
@@ -9,11 +17,20 @@ body.stdhl #top-bar {
     cursor: pointer;
     left: 8px;
     backdrop-filter: unset;
-    background-image: url(/img/five.png);
+    background-image: var(--stdhl--iconUrl);
     background-size: cover;
     background-position: center center;
     border-radius: 50%;
     box-shadow: unset;
+    &:is([data-stdhl--homeicontype="icon"] *) {
+        background-image: none;
+        background-color: rgb(0 0 0 / 0.25) !important;
+        &::before {
+            display: block;
+            font-family: "Font Awesome 6 Free";
+            font-size: 1.75em;
+        }
+    }
     &:after {
         content: "";
         position: absolute;
@@ -37,6 +54,11 @@ body.stdhl--nonDiscord {
         position: relative;
         z-index: 1;
         &:hover > .drawer-icon { opacity: 0; }
+        &:is([data-stdhl--homeIconType="icon"] *) {
+            &::before {
+                display: static;
+            }
+        }
         &:after {
             content: "";
             position: absolute;
@@ -130,7 +152,17 @@ body.stdhl--nonDiscord {
     }
 
     .stdhl--icon {
+        flex: 0 0 auto;
         font-size: 1.5em;
+    }
+
+    #stdhl--homeIconImage-icon {
+        background-image: var(--stdhl--iconUrl);
+        background-position: center;
+        background-size: cover;
+        border-radius: 50%;
+        height: 1.25em;
+        width: 1.25em;
     }
 }
 

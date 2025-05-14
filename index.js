@@ -84,8 +84,32 @@ async function getUserList() {
 
 
 
+/**@type {HTMLElement}*/
+export let trigger = null;
 
 const settings = new Settings();
+
+
+const NAME = new URL(import.meta.url).pathname.split('/').at(-2);
+const watchCss = async()=>{
+    try {
+        const FilesPluginApi = (await import('../SillyTavern-FilesPluginApi/api.js')).FilesPluginApi;
+        // watch CSS for changes
+        const style = document.createElement('style');
+        document.body.append(style);
+        const path = [
+            '~',
+            'extensions',
+            NAME,
+            'style.css',
+        ].join('/');
+        const ev = await FilesPluginApi.watch(path, 500);
+        ev.addEventListener('message', async(mes)=>{
+            style.innerHTML = await (await FilesPluginApi.get(path)).text();
+            document.querySelector(`#third-party_${NAME}-css`)?.remove();
+        });
+    } catch { /* empty */ }
+};
 
 
 
@@ -169,8 +193,6 @@ if (hasProcessPlugin) {
 let isDiscord = null;
 let user;
 let avatar;
-/**@type {HTMLElement}*/
-let trigger;
 
 const clickListener = async(evt)=>{
     if (!isDiscord) return;
@@ -352,6 +374,7 @@ const contextListener = async(evt)=>{
         trigger.append(ctx);
     }
 };
+
 const checkDiscord = async()=>{
     let newIsDiscord = window.getComputedStyle(document.body).getPropertyValue('--nav-bar-width') !== '';
     if (isDiscord != newIsDiscord) {
@@ -368,6 +391,7 @@ const checkDiscord = async()=>{
         const drawerIcon = /**@type {HTMLElement}*/(document.querySelector('#user-settings-button > .drawer-toggle > .drawer-icon'));
         if (isDiscord) {
             trigger = document.querySelector('#top-bar');
+            trigger.classList.add(settings.homeIconIcon);
             trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--nav-bar-width) - 16px)');
             hint = 'Click to return to landing page\nRight-click to switch users, logout, restart server, or shutdown server';
             const sep = '–'.repeat(Math.min(50, Math.max(user.length,...hint.split('\n').map(it=>it.length))));
@@ -377,6 +401,7 @@ const checkDiscord = async()=>{
             drawerIcon.title = 'User Settings';
         } else {
             trigger = document.querySelector('#user-settings-button > .drawer-toggle');
+            trigger.classList.add(settings.homeIconIcon);
             trigger.style.setProperty('--stdhl--iconSize', 'calc(var(--topBarBlockSize))');
             hint = 'Right click to return to landing page, switch users, logout, restart server, or shutdown server';
             const sep = '–'.repeat(Math.min(50, Math.max(user.length,...hint.split('\n').map(it=>it.length))));
@@ -388,6 +413,7 @@ const checkDiscord = async()=>{
     setTimeout(checkDiscord, 2000);
 };
 checkDiscord();
+watchCss();
 
 const d = Number(new Date().toISOString().slice(5, 10).replace('-', ''));
 if (d >= 1223) {
