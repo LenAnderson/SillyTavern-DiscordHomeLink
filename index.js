@@ -103,10 +103,13 @@ const watchCss = async()=>{
             NAME,
             'style.css',
         ].join('/');
-        const ev = await FilesPluginApi.watch(path, 500);
-        ev.addEventListener('message', async(mes)=>{
-            style.innerHTML = await (await FilesPluginApi.get(path)).text();
-            document.querySelector(`#third-party_${NAME}-css`)?.remove();
+        const { eventSource:ev, watcherToken:token } = await FilesPluginApi.watch(path);
+        ev.addEventListener('message', async(evt)=>{
+            const mes = JSON.parse(evt.data);
+            if (mes.data.watcherToken == token) {
+                style.innerHTML = await (await FilesPluginApi.get(path)).text();
+                document.querySelector(`#third-party_${NAME}-css`)?.remove();
+            }
         });
     } catch { /* empty */ }
 };
