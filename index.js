@@ -258,11 +258,11 @@ const contextListener = async(evt)=>{
                         if (!btn.dataset.observer) {
                             const mo = new MutationObserver(()=>{
                                 if (!settings.topBarList.includes(title)) return;
-                                if (body.style.display == 'none') {
+                                if (body.classList.contains('closedDrawer')) {
                                     btn.classList.add('stdhl--isHidden');
                                 }
                             });
-                            mo.observe(body, { attributes:true, attributeFilter:['style'] });
+                            mo.observe(body, { attributes:true, attributeFilter:['class'] });
                             btn.dataset.observer = '1';
                         }
                         btn.classList.remove('stdhl--isHidden');
